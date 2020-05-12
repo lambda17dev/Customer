@@ -3,7 +3,9 @@ local\config\kafka\KafkaProcessor.class
 local\OrderStatusViewHandler.class
 local\Order.class
 local\OrderStatusRepository.class
+local\OrderCancelConfirmed.class
 local\AbstractEvent.class
+local\CustomerApplication.class
 local\OrderCancelRequested.class
 local\OrderRepository.class
 local\OrderStatus.class
@@ -14,4 +16,3 @@ local\OrderReceived.class
 local\OrderCanceled.class
 local\OrderSelected.class
 local\OrderRejected.class
-local\Application.class
