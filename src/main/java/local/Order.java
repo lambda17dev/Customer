@@ -15,6 +15,11 @@ import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.MimeTypeUtils;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.util.Dictionary;
 import java.util.List;
 
@@ -38,7 +43,7 @@ public class Order {
         orderSelected.publish();
 
         // 결제 시작
-        if (Math.random() > 0.5){
+        if (Math.random() > 0.9){
             // 결제 성공
             PaymentCompleted paymentCompleted = new PaymentCompleted();
             BeanUtils.copyProperties(this, paymentCompleted);
@@ -46,11 +51,20 @@ public class Order {
 
         } else {
             // 결제 실패
+            // 부하 테스트
+            URL url = null;
             try {
-                Thread.currentThread().sleep((long) (400 + Math.random() * 220));
-            } catch (InterruptedException e) {
+                url = new URL("http://naver.com");
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                con.setRequestMethod("GET");
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (ProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
+
             orderSelected.setPaymentFail(true);
             orderSelected.publish();
         }
