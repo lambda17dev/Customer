@@ -43,7 +43,7 @@ public class Order {
         orderSelected.publish();
 
         // 결제 시작
-        if (Math.random() > 0.9){
+        if (Math.random() > 0){
             // 결제 성공
             PaymentCompleted paymentCompleted = new PaymentCompleted();
             BeanUtils.copyProperties(this, paymentCompleted);
@@ -53,7 +53,7 @@ public class Order {
             // 결제 실패
             // 부하 테스트
             for (int i = 0; i < 10000; i++){
-                System.out.println(i);
+
             }
 
 
