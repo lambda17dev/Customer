@@ -5,6 +5,7 @@ public class PaymentCompleted extends AbstractEvent {
     private Long orderId;
     private String product;
     private Integer qty;
+    private Integer price;
 
     public PaymentCompleted(){
         super();
@@ -35,4 +36,11 @@ public class PaymentCompleted extends AbstractEvent {
         this.qty = qty;
     }
 
+    public Integer getPrice() {
+        return price;
+    }
+
+    public void setPrice(Integer price) {
+        this.price = price;
+    }
 }

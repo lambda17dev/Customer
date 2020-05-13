@@ -91,7 +91,7 @@ stages:
                   labels:
                     app: $(imageRepository)
                 spec:
-                  replicas: 3
+                  replicas: 1
                   selector:
                     matchLabels:
                       app: $(imageRepository)
