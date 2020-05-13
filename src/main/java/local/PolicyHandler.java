@@ -12,70 +12,46 @@ import org.springframework.stereotype.Service;
 public class PolicyHandler{
     @Autowired
     OrderRepository orderRepository;
-    
+
+    // 오더 수락 됨 -> Cancel 불가
     @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverOrderReceived_CannotOrderCencel(@Payload OrderReceived orderReceived){
+    public void wheneverOrderReceived_CannotOrderCancel(@Payload OrderReceived orderReceived){
 
         if(orderReceived.isMe()){
             System.out.println("##### listener CannotOrderCencel : " + orderReceived.toJson());
-        }
-    }
-    @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverOrderRejected_CannotOrderCencel(@Payload OrderRejected orderRejected){
 
-        if(orderRejected.isMe()){
-            System.out.println("##### listener CannotOrderCencel : " + orderRejected.toJson());
+            Order order = orderRepository.findById(orderReceived.getOrderId()).get();
+            order.setCannotOrderCanceled(true);
+            orderRepository.save(order);
         }
     }
+
     @StreamListener(KafkaProcessor.INPUT)
     public void wheneverOrderRejected_PayBack(@Payload OrderRejected orderRejected){
 
         if(orderRejected.isMe()){
-            System.out.println("##### listener PayBack : " + orderRejected.toJson());
-        }
-    }
-    @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverOrderRejected_OrderCancelFromDelivery(@Payload OrderRejected orderRejected){
+            System.out.println("#### 오더가 거절 되었습니다. : " + orderRejected.getOrderId().toString());
 
-        if(orderRejected.isMe()){
-            System.out.println("##### listener OrderCancelFromDelivery : " + orderRejected.toJson());
+            Order order = orderRepository.findById(orderRejected.getOrderId()).get();
+            order.setStatus("order_rejected");
+            orderRepository.save(order);
+
+            // TO-DO : Payback 구현
         }
     }
+
     @StreamListener(KafkaProcessor.INPUT)
     public void wheneverOrderCancelConfirmed_ReceiveCancelConfirmed(@Payload OrderCancelConfirmed orderCancelConfirmed){
 
         if(orderCancelConfirmed.isMe()){
             System.out.println("#### 오더가 취소 되었습니다. : " + orderCancelConfirmed.getOrderId().toString());
-        }
-    }
-    @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverOrderRejected_RejectedFromDelivery(@Payload OrderRejected orderRejected){
 
-        if(orderRejected.isMe()){
-            System.out.println("#### 오더가 거절 되었습니다. : " + orderRejected.getOrderId().toString());
-            orderRepository.findById(orderRejected.getOrderId()).ifPresent(
-                    order -> {
-                        order.setType(2);
-                        orderRepository.save(order);
-                    }
-            );
-            System.out.println("#### 환불 되었습니다.");
+            Order order = orderRepository.findById(orderCancelConfirmed.getOrderId()).get();
+            order.setStatus("order_canceled");
+            orderRepository.save(order);
+
+            // TO-DO : Payback 구현
         }
     }
 
-
-    @StreamListener(KafkaProcessor.INPUT)
-    public void wheneverOrderReceived_CannotOrderCancel(@Payload OrderReceived orderReceived){
-
-        if(orderReceived.isMe()){
-            System.out.println("#### 오더가 수락 되었습니다. : " + orderReceived.getOrderId().toString());
-            orderRepository.findById(orderReceived.getOrderId()).ifPresent(
-                    order -> {
-                        order.setType(3);
-                        orderRepository.save(order);
-                    }
-            );
-            System.out.println("#### 환불 되었습니다.");
-        }
-    }
 }

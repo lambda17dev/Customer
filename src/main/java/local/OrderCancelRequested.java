@@ -2,27 +2,13 @@ package local;
 
 public class OrderCancelRequested extends AbstractEvent {
 
-    private Long id;
     private Long orderId;
-    private String product;
-    private Integer qty;
-    private Integer price;
-    private Integer type;
+    private String status;
 
 
     public OrderCancelRequested(){
         super();
     }
-
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
 
     public Long getOrderId() {
         return orderId;
@@ -32,35 +18,11 @@ public class OrderCancelRequested extends AbstractEvent {
         this.orderId = orderId;
     }
 
-    public String getProduct() {
-        return product;
+    public String getStatus() {
+        return status;
     }
 
-    public void setProduct(String product) {
-        this.product = product;
-    }
-
-    public Integer getQty() {
-        return qty;
-    }
-
-    public void setQty(Integer qty) {
-        this.qty = qty;
-    }
-
-    public Integer getPrice() {
-        return price;
-    }
-
-    public void setPrice(Integer price) {
-        this.price = price;
-    }
-
-    public Integer getType() {
-        return type;
-    }
-
-    public void setType(Integer type) {
-        this.type = type;
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

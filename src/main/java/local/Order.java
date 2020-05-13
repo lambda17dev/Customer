@@ -11,8 +11,11 @@ import org.springframework.cloud.stream.messaging.Processor;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.MimeTypeUtils;
 
+import java.util.Dictionary;
 import java.util.List;
 
 @Entity
@@ -25,93 +28,44 @@ public class Order {
     private String product;
     private Integer qty;
     private Integer price;
-    private Integer type;
+    private String status;
+    private Boolean cannotOrderCanceled = false;
 
     @PostPersist
-    @PostUpdate
-    @PrePersist
     public void eventPublish() throws JsonProcessingException {
+        OrderSelected orderSelected = new OrderSelected();
+        BeanUtils.copyProperties(this, orderSelected);
+        orderSelected.publish();
 
-        if (type.equals(0)) {
-            OrderSelected orderSelected = new OrderSelected();
-            orderSelected.setEventType("OrderSelected");
-            BeanUtils.copyProperties(this, orderSelected);
+        // 결제 시작
+        if (Math.random() > 0.5){
+            // 결제 성공
+            PaymentCompleted paymentCompleted = new PaymentCompleted();
+            BeanUtils.copyProperties(this, paymentCompleted);
+            paymentCompleted.publish();
 
-            orderSelected.setType(this.getType());
-            orderSelected.setOrderId(this.getOrderId());
-            orderSelected.setQty(this.getQty());
-            orderSelected.setProduct(this.getProduct());
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            String json = null;
-
-            try {
-                json = objectMapper.writeValueAsString(orderSelected);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException("JSON format exception", e);
-            }
-
-            KafkaProcessor processor = CustomerApplication.applicationContext.getBean(KafkaProcessor.class);
-            MessageChannel outputChannel = processor.outboundTopic();
-
-            /*
-            outputChannel.send(MessageBuilder
-                    .withPayload(json)
-                    .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
-                    .build()); */
-
-
-
-
-        PaymentCompleted paymentCompleted = new PaymentCompleted();
-
-        // Payment 완료되었다고 가정
-
-        // BeanUtils.copyProperties(this, paymentCompleted);
-        paymentCompleted.setType(this.getType());
-        paymentCompleted.setOrderId(this.getOrderId());
-        paymentCompleted.setQty(this.getQty());
-        paymentCompleted.setProduct(this.getProduct());
-
-        paymentCompleted.publishAfterCommit();
-    }
-
-
-        else
-
-    {
-        /*
-        OrderCanceled orderCanceled = new OrderCanceled();
-        BeanUtils.copyProperties(this, orderCanceled);
-        orderCanceled.publishAfterCommit();
-        */
-
-
-        OrderCancelRequested orderCancelRequested = new OrderCancelRequested();
-        BeanUtils.copyProperties(this, orderCancelRequested);
-        orderCancelRequested.publishAfterCommit();
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String json = null;
-
-        try {
-            json = objectMapper.writeValueAsString(orderCancelRequested);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("JSON format exception", e);
+        } else {
+            // 결제 실패
+            orderSelected.setPaymentFail(true);
+            orderSelected.publish();
         }
-
-        KafkaProcessor processor = CustomerApplication.applicationContext.getBean(KafkaProcessor.class);
-        MessageChannel outputChannel = processor.outboundTopic();
-
-        outputChannel.send(MessageBuilder
-                .withPayload(json)
-                .setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
-                .build());
-
-
     }
 
-}
+    @PostUpdate
+    public void onPostUpdate() throws JsonProcessingException {
+        if ("order_cancel_request".equals(this.status)) {
+            if (cannotOrderCanceled) {
+                // 수락이 확인되어 요청을 보낼 수 없는 경우
+                System.out.println("##### 주문 제작이 시작되어 취소할 수 없습니다.");
+            } else {
+                // 요청을 보낼 수 있는 경우 우선 취소 요청을 보냄
+                System.out.println("##### 주문이 취소 요청 되었습니다. 이미 제작이 시작 된 경우 취소 요청이 거절될 수 있습니다.");
+                OrderCancelRequested orderCancelRequested = new OrderCancelRequested();
+                BeanUtils.copyProperties(this, orderCancelRequested);
+                orderCancelRequested.publish();
+            }
+        }
+    }
 
     public Long getOrderId() {
         return orderId;
@@ -128,6 +82,7 @@ public class Order {
     public void setProduct(String product) {
         this.product = product;
     }
+
     public Integer getQty() {
         return qty;
     }
@@ -135,6 +90,7 @@ public class Order {
     public void setQty(Integer qty) {
         this.qty = qty;
     }
+
     public Integer getPrice() {
         return price;
     }
@@ -143,12 +99,19 @@ public class Order {
         this.price = price;
     }
 
-    public Integer getType() {
-        return type;
+    public String getStatus() {
+        return status;
     }
 
-    public void setType(Integer type) {
-        this.type = type;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
+    public Boolean getCannotOrderCanceled() {
+        return cannotOrderCanceled;
+    }
+
+    public void setCannotOrderCanceled(Boolean cannotOrderCanceled) {
+        this.cannotOrderCanceled = cannotOrderCanceled;
+    }
 }

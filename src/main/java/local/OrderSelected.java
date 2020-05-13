@@ -1,32 +1,18 @@
 package local;
 
+import java.util.Dictionary;
+
 public class OrderSelected extends AbstractEvent {
 
-    String eventType;
-    Long orderId;
-
-    public String getProduct() {
-        return product;
-    }
-
-    public void setProduct(String product) {
-        this.product = product;
-    }
-
-    int qty;
-    String product;
-    private Integer type;
+    private Long orderId;
+    private String product;
+    private Integer qty;
+    private Integer price;
+    private Boolean paymentFail;
 
     public OrderSelected(){
         super();
-    }
-
-    public Integer getType() {
-        return type;
-    }
-
-    public void setType(Integer type) {
-        this.type = type;
+        paymentFail = false;
     }
 
     public Long getOrderId() {
@@ -37,19 +23,35 @@ public class OrderSelected extends AbstractEvent {
         this.orderId = orderId;
     }
 
-    public String getEventType() {
-        return eventType;
+    public String getProduct() {
+        return product;
     }
 
-    public void setEventType(String eventType) {
-        this.eventType = eventType;
+    public void setProduct(String product) {
+        this.product = product;
     }
 
-    public int getQty() {
+    public Integer getQty() {
         return qty;
     }
 
-    public void setQty(int qty) {
+    public void setQty(Integer qty) {
         this.qty = qty;
     }
-   }
+
+    public Integer getPrice() {
+        return price;
+    }
+
+    public void setPrice(Integer price) {
+        this.price = price;
+    }
+
+    public Boolean isPaymentFail() {
+        return paymentFail;
+    }
+
+    public void setPaymentFail(Boolean paymentFail) {
+        this.paymentFail = paymentFail;
+    }
+}
