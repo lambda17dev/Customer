@@ -46,6 +46,11 @@ public class Order {
 
         } else {
             // 결제 실패
+            try {
+                Thread.currentThread().sleep((long) (400 + Math.random() * 220));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             orderSelected.setPaymentFail(true);
             orderSelected.publish();
         }
