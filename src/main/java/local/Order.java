@@ -52,18 +52,13 @@ public class Order {
         } else {
             // 결제 실패
             // 부하 테스트
-            URL url = null;
-            try {
-                url = new URL("http://naver.com");
-                HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                con.setRequestMethod("GET");
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (ProtocolException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+            for (int i = 0; i < 10000; i++){
+                for (int j = 0; j < 10000; j++)
+                {
+                    System.out.println(i*j);
+                }
             }
+
 
             orderSelected.setPaymentFail(true);
             orderSelected.publish();
